@@ -14,7 +14,7 @@
 DROP TABLE IF EXISTS t0;
 CREATE TABLE t0 (
     c1 STRING,
-    c2 ARRAY<CHAR(1)>, 
+    c2 STRING, 
     c3 MAP<STRING, INT>
     )
     ROW FORMAT DELIMITED 
@@ -26,5 +26,14 @@ LOAD DATA LOCAL INPATH 'data.tsv' INTO TABLE t0;
 --
 -- >>> Escriba su respuesta a partir de este punto <<<
 --
+
+INSERT OVERWRITE LOCAL DIRECTORY 'output'
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ','
+SELECT   tf2, tf1.key, count (tf1.key)
+FROM t0  
+lateral view explode(split(c2, '\\,')) lv as tf2
+lateral view explode(c3) tf1
+GROUP BY  tf2, tf1.key;
 
 

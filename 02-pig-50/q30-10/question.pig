@@ -27,17 +27,36 @@
 --    1973-04-29,29,29,dom,domingo
 -- 
 -- Escriba el resultado a la carpeta `output` del directorio actual.
--- 
-fs -rm -f -r output;
 --
+-- >>> Escriba su respuesta a partir de este punto <<<
+--
+
+fs -rm -f -r output;
+
+fs -copyFromLocal data.csv;
+
 u = LOAD 'data.csv' USING PigStorage(',') 
-    AS (id:int, 
+    AS (number:INT, 
         firstname:CHARARRAY, 
         surname:CHARARRAY, 
-        birthday:CHARARRAY, 
+        birthday:DATETIME, 
         color:CHARARRAY, 
         quantity:INT);
 --
 -- >>> Escriba su respuesta a partir de este punto <<<
 --
-
+l = FOREACH u GENERATE birthday, (
+     CASE ToString(birthday, 'EEE')
+		WHEN 'Mon' THEN 'lunes'
+		WHEN 'Tue' THEN 'martes'
+		WHEN 'Wed' THEN 'miercoles'
+		WHEN 'Thu' THEN 'jueves'
+		WHEN 'Fri' THEN 'viernes'
+		WHEN 'Sat' THEN 'sabado'
+		WHEN 'Sun' THEN 'domingo'
+	 END
+    ) as dia;
+p = FOREACH l GENERATE SUBSTRING(ToString(birthday), 0, 10), SUBSTRING(ToString(birthday), 8, 10), (INT) SUBSTRING(ToString(birthday), 8, 10), SUBSTRING(dia, 0, 3), dia; 
+STORE p INTO 'output' USING PigStorage(',');
+fs -copyToLocal output;
+fs -rm *.csv;

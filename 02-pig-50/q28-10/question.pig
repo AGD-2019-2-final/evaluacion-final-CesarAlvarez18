@@ -19,6 +19,8 @@
 -- 
 fs -rm -f -r output;
 --
+fs -copyFromLocal data.csv;
+--
 u = LOAD 'data.csv' USING PigStorage(',') 
     AS (id:int, 
         firstname:CHARARRAY, 
@@ -26,7 +28,10 @@ u = LOAD 'data.csv' USING PigStorage(',')
         birthday:CHARARRAY, 
         color:CHARARRAY, 
         quantity:INT);
---
--- >>> Escriba su respuesta a partir de este punto <<<
---
+        
+per = FOREACH u GENERATE SUBSTRING(birthday, 0 ,4) as pri, SUBSTRING(birthday, 2 ,4) as dos;
+con = FOREACH per GENERATE CONCAT (pri ,',', dos) ;
+STORE con INTO 'output';
 
+fs -copyToLocal output;
+fs -rm *.csv;

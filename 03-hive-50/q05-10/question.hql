@@ -39,4 +39,27 @@ LOAD DATA LOCAL INPATH 'tbl1.csv' INTO TABLE tbl1;
 --
 -- >>> Escriba su respuesta a partir de este punto <<<
 --
+DROP TABLE IF EXISTS tbl0;
+CREATE TABLE tbl0 (
+    c1 INT,
+    c2 STRING,
+    c3 INT,
+    c4 STRING,
+    c5 STRING, 
+    c6 MAP<STRING, INT>
+)
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ','
+COLLECTION ITEMS TERMINATED BY ':'
+MAP KEYS TERMINATED BY '#'
+LINES TERMINATED BY '\n';
+LOAD DATA LOCAL INPATH "tbl0.csv" OVERWRITE INTO TABLE tbl0;
 
+INSERT OVERWRITE LOCAL DIRECTORY 'output'
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ','
+SELECT  fec, word ,count(*) FROM (
+SELECT substr (c4,1,4) AS fec , word
+FROM tbl0 lateral view explode(split(c5, '\\:')) temp_table AS word
+) x
+GROUP BY  fec ,word;

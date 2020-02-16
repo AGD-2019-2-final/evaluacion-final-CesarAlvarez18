@@ -27,5 +27,17 @@
 -- 
 fs -rm -f -r output;
 --
+fs -copyFromLocal data.csv;
 
+lines = LOAD './data.csv' USING PigStorage(',') AS 
+(f1:INT ,
+f2:CHARARRAY ,
+f3:CHARARRAY,
+f4:INT,
+f5:CHARARRAY,
+f6:INT);
+mail = FOREACH lines GENERATE  CONCAT (f2,'@', f3) as correo;
+STORE mail INTO 'output';
 
+fs -copyToLocal output;
+fs -rm *.csv;
